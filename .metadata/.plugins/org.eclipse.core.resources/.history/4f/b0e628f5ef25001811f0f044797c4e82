@@ -1,0 +1,6 @@
+package app.main;
+
+public interface INetworkable {
+	
+	public void receivePacket();
+}

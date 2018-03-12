@@ -1,0 +1,77 @@
+package app.main;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class NetworkSim {
+	
+	public boolean dropPackets = false;
+	public boolean corruptPackets = false;
+	public boolean duplicatePackets = false;
+	public boolean delayPackets = false;
+	public double errorProbability = 0.1;
+	public double corruptionRate = 0.3;
+	public int delayTime = 20;
+	
+	private List<INetworkable> hosts;
+	private Random rand;
+	
+	public NetworkSim() {
+		hosts = new ArrayList<INetworkable>();
+		rand = new Random();
+	}
+	
+	public void connect(INetworkable host) {
+		hosts.add(host);
+		host.onConnect(this);
+	}
+	
+	public void disconnect(INetworkable host) {
+		hosts.remove(host);
+	}
+	
+	public void broadcastPacket(INetworkable localhost, byte[] packet) {
+		int hostID = hosts.indexOf(localhost);
+		INetworkable[] hostArray = (INetworkable[]) hosts.toArray();
+		for (int i = 0; i < hostArray.length; i++) {
+			if (i != hostID) {
+				sendWithConditions(hostArray, i, packet);
+			}
+		}
+	}
+	
+	public void sendPacket(INetworkable receiver, byte[] packet) {
+		if (hosts.contains(receiver)) {
+			INetworkable[] hostArray = (INetworkable[]) hosts.toArray();
+			int hostID = hosts.indexOf(receiver);
+			sendWithConditions(hostArray, hostID, packet);
+		}
+	}
+	
+	private void sendWithConditions(INetworkable[] hostArray, int id, byte[] packet) {
+		if (delayPackets) {
+			try {
+				Thread.sleep(delayTime);
+			} catch (InterruptedException e) {}
+		}
+		if (dropPackets && rand.nextDouble() < errorProbability) {
+			return;
+		}
+		if (corruptPackets && rand.nextDouble() < errorProbability) {
+			corruptPacket(packet);
+		}
+		if (duplicatePackets && rand.nextDouble() < errorProbability) {
+			hostArray[id].receivePacket(packet);	
+		}
+		hostArray[id].receivePacket(packet);
+	}
+	
+	private void corruptPacket(byte[] packet) {
+		for (int i = 0; i < packet.length; i++) {
+			if (rand.nextDouble() < corruptionRate) {
+				packet[i] = (byte) ((int) packet[i] ^ (int) rand.nextInt());
+			}
+		}
+	}
+}

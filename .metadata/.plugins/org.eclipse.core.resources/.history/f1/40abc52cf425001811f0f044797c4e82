@@ -1,0 +1,56 @@
+package app.main;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class NetworkSim {
+	
+	public boolean dropPackets = false;
+	public boolean corruptPackets = false;
+	public boolean duplicatePackets = false;
+	public double errorProbability = 0.1;
+	
+	private List<INetworkable> hosts;
+	private Random rand;
+	
+	public NetworkSim() {
+		hosts = new ArrayList<INetworkable>();
+		rand = new Random();
+	}
+	
+	public void connect(INetworkable host) {
+		hosts.add(host);
+	}
+	
+	public void disconnect(INetworkable host) {
+		hosts.remove(host);
+	}
+	
+	public void sendPacket(INetworkable host, byte[] packet) {
+		int hostID = hosts.indexOf(host);
+		INetworkable[] hostArray = (INetworkable[]) hosts.toArray();
+		for (int i = 0; i < hostArray.length; i++) {
+			if (i != hostID) {
+				sendWithConditions(hostArray, i, packet);
+			}
+		}
+	}
+	
+	private void sendWithConditions(INetworkable[] hostArray, int id, byte[] packet) {
+		if (dropPackets && rand.nextDouble() < errorProbability) {
+			return;
+		}
+		if (corruptPackets && rand.nextDouble() < errorProbability) {
+			corruptPacket(packet);
+		}
+		if (duplicatePackets && rand.nextDouble() < errorProbability) {
+			hostArray[id].receivePacket(packet);	
+		}
+		hostArray[id].receivePacket(packet);
+	}
+	
+	private void corruptPacket(byte[] packet) {
+		
+	}
+}

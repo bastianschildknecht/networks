@@ -1,0 +1,9 @@
+package app.main;
+
+public interface INetworkable {
+	
+	public NetworkSim connectedTo = null;
+	
+	public void receivePacket(byte[] packet);
+	
+}

@@ -1,0 +1,11 @@
+package app.main;
+
+public class Receiver implements INetworkable {
+
+	@Override
+	public void receivePacket(byte[] packet) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}
